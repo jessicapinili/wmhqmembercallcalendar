@@ -454,6 +454,8 @@ h1 em{font-style:normal;color:#F2C6D0}
 .cal-next .joinnow{background:#fff!important;color:var(--bright-red);text-decoration:none;font-weight:500}
 .cal-next .joinnow:hover{background:var(--pill)!important}
 @media(max-width:700px){.view-tog{display:none}}
+.cinfo ul{padding-left:20px;margin:0 0 12px}
+.cinfo li{color:var(--ink-light);padding:3px 0;line-height:1.6}
 </style>
 </head>
 <body>
@@ -541,6 +543,25 @@ const callInfo = {
   subconscious: `<p><b>Focus:</b> Beliefs, identity, fears, limitations and nervous system capacity.</p><p><b>Before the call:</b> Pre-submit your questions <a href="https://subconsciousquestion.womanmasteryhq.com/" target="_blank" rel="noopener">HERE</a> ahead of time. Anything comes up live? Bring that too.</p>`,
   combined: `<p><b>Focus:</b> Case studies, the Fear Process and strategy check-ins.</p><p><b>Please note:</b> Pre-submit your questions ahead of time (<a href="https://businessquestion.womanmasteryhq.com/" target="_blank" rel="noopener">business questions</a> or <a href="https://subconsciousquestion.womanmasteryhq.com/" target="_blank" rel="noopener">subconscious questions</a>) so we can hit the ground running! But of course, whatever comes up live on the call, we’ll get to.</p>`
 };
+const workshopInfo = { p1: `<p>Twice a year, we close the 99+ tabs and take a proper look at the business.</p>
+<p>What’s working? What’s taking a whole lot of effort for very little return? And what keeps getting pushed to next week because you don’t quite know what to do with it?</p>
+<p>We’ll work through the four WMHQ phases:</p>
+<ul><li><b>Influence:</b> Is your messaging clear? Do you know who you’re speaking to and why they’d choose you?</li>
+<li><b>Visibility:</b> Is your content and marketing getting you in front of the right people?</li>
+<li><b>Cash:</b> Are your offers and sales process helping people buy? How does it all connect?</li>
+<li><b>Subconscious Mastery:</b> Where are fear, self-doubt or feeling stretched affecting your decisions and follow-through?</li></ul>
+<p>You’ll leave knowing the main thing slowing you down and what needs attention before you start planning the next six months.</p>
+<p>We’re doing the work in this session. I’ll prepare a guide to work through together. Bring your laptop or a notepad and pen, plus:</p>
+<ul><li>Your recent sales numbers</li><li>What you’ve been selling</li><li>Any content or campaigns you want to review</li></ul>
+<p><b>Come LIVE if you can, you will get more out of it.</b> Ask questions and get feedback while we work through your business. A replay will be available.</p>`, p2: `<p>You’ve had a proper look at what’s happening. Now we decide what you’re going to do about it.</p>
+<p>We’ll turn your review into a focused six-month plan, with clear priorities across your positioning, content, marketing, offers and sales.</p>
+<p>We’ll also check what you can realistically follow through on.</p>
+<p>You’ll leave with:</p>
+<ul><li>A clear direction for 2027</li><li>Your priorities for the next six months</li><li>Your first actions for the next 30 days</li></ul>
+<p>This is another working session. I’ll have a guide ready, so bring your laptop or a notepad and pen, plus your notes from Part 1. Especially the main bottleneck &amp; gaps you identified.</p>
+<p><b>Be there LIVE if you can. You will get more out of it.</b> Bring the decisions you’re stuck on. You’ll be able to ask questions, get feedback and check whether your plan makes sense before filling your calendar with it.</p>
+<p>A replay will be available.</p>` };
+const infoFor=e=>e.highlight==="workshop"?(/(session\s*0?2|part\s*2|decide)/i.test(e.title)?workshopInfo.p2:workshopInfo.p1):callInfo[e.type];
 let selIdx=-1;
 function showDetail(e){
   selIdx=callEvents.indexOf(e);
@@ -552,7 +573,7 @@ function showDetail(e){
     <h4>${e.title}</h4>
     <div class="tz"><div><span>Your time</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}, ${tFmt(d)} to ${tFmt(en)}</div>
     <div><span>Jess's time (Brisbane)</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",timeZone:"Australia/Brisbane"})}, ${bneFmt(d)} to ${bneFmt(en)}</div></div>
-    ${!e.highlight&&callInfo[e.type]?`<div class="cinfo">${callInfo[e.type]}</div>`:""}
+    ${infoFor(e)?`<div class="cinfo">${infoFor(e)}</div>`:""}
     <div class="acts"><a class="primary" href="${e.join||JOIN_URL}" target="_blank" rel="noopener">${e.join?"Join the call":"Join via Kajabi Meetups"}</a>
     <a href="${gcalLink(e)}" target="_blank" rel="noopener">Add to Google</a>
     <a href="${icsLink(e)}" download="wmhq-call.ics">Add to Apple / Outlook</a></div>`;
