@@ -456,6 +456,34 @@ h1 em{font-style:normal;color:#F2C6D0}
 @media(max-width:700px){.view-tog{display:none}}
 .cinfo ul{padding-left:20px;margin:0 0 12px}
 .cinfo li{color:var(--ink-light);padding:3px 0;line-height:1.6}
+.att{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px}
+.att-btn{display:inline-flex;align-items:center;gap:10px;border:2px solid #240709;background:var(--white);color:#240709;border-radius:100px;padding:10px 20px 10px 12px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.att-btn .ac{width:22px;height:22px;border-radius:50%;border:2px solid #240709;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:transparent}
+.att-btn[aria-pressed="true"]{background:#240709;color:var(--stone)}
+.att-btn[aria-pressed="true"] .ac{background:#FBE7A1;border-color:#FBE7A1;color:#240709}
+.att-btn:disabled{opacity:.6}
+.att-n{font-size:14px;font-weight:700;color:var(--bright-red)}
+.ev .attc{color:var(--bright-red);font-weight:500}
+.att.top{position:absolute;top:18px;right:56px;margin:0;flex-direction:column;align-items:flex-end;gap:6px}
+.att.top .att-btn{background:#FBE7A1;border-color:#e3c65c;color:#240709;padding:12px 22px 12px 14px;box-shadow:0 6px 18px rgba(36,7,9,.12)}
+.att.top .att-btn .ac{border-color:#240709}
+.att.top .att-btn[aria-pressed="true"]{background:#240709;color:var(--stone);border-color:#240709}
+.att.top .att-n{font-size:13px}
+.att-join{display:inline-flex;align-items:center;gap:10px;background:var(--bright-red);color:#fff;text-decoration:none;border-radius:100px;padding:14px 24px;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;box-shadow:0 8px 22px rgba(141,0,4,.3)}
+.att-join:hover{background:var(--deep-red)}
+.cal-detail .tag,.cal-detail h4{max-width:calc(100% - 280px)}
+@media(max-width:700px){
+  .att.top{position:static;align-items:flex-start;margin:4px 0 14px}
+  .cal-detail .tag,.cal-detail h4{max-width:none}
+  .att-join,.att.top .att-btn{width:100%;justify-content:center}
+}
+.att.top .att-btn{background:var(--deep-red);border-color:var(--deep-red);color:var(--stone)}
+.att.top .att-btn .ac{border-color:rgba(241,235,235,.7)}
+.att.top .att-btn:hover{background:var(--bright-red);border-color:var(--bright-red)}
+.att.top .att-btn[aria-pressed="true"]{background:#240709;border-color:#240709}
+.att.top .att-btn[aria-pressed="true"] .ac{border-color:#FBE7A1}
+.att-btn.t-business{--tick:#CFE3D1}.att-btn.t-subconscious{--tick:#DCD3EC}.att-btn.t-combined{--tick:#F2C6D0}.att-btn.t-masterclass{--tick:#E3BACB}.att-btn.t-workshop{--tick:#FBE7A1}
+.att.top .att-btn[aria-pressed="true"] .ac{background:var(--tick,#FBE7A1);border-color:var(--tick,#FBE7A1)}
 </style>
 </head>
 <body>
@@ -562,6 +590,33 @@ const workshopInfo = { p1: `<p>Twice a year, we close the 99+ tabs and take a pr
 <p><b>Be there LIVE if you can. You will get more out of it.</b> Bring the decisions you’re stuck on. You’ll be able to ask questions, get feedback and check whether your plan makes sense before filling your calendar with it.</p>
 <p>A replay will be available.</p>` };
 const infoFor=e=>e.highlight==="workshop"?(/(session\s*0?2|part\s*2|decide)/i.test(e.title)?workshopInfo.p2:workshopInfo.p1):callInfo[e.type];
+
+/* ===== ATTENDANCE (Supabase: WMHQ App) ===== */
+const SB_URL="https://gglpsokiodelfrfnpxua.supabase.co", SB_KEY="sb_publishable_4kwUVummpI_EuwBQxMS5jw_EAl7fRJK";
+const evKey=e=>e.type+"|"+new Date(e.start).toISOString();
+const deviceId=(()=>{try{let d=localStorage.getItem("wmhqDevice");if(!d){d=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());localStorage.setItem("wmhqDevice",d);}return d;}catch(_){return "anon-"+Math.random().toString(36).slice(2,12);}})();
+const attendCount={};
+const iAttend=k=>{try{return localStorage.getItem("att:"+k)==="1";}catch(_){return false;}};
+async function sbRpc(fn,body){const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);return r.json();}
+let attFetchT=0;
+async function loadAttendance(){
+  const keys=callEvents.map(evKey);
+  try{const rows=await sbRpc("get_call_attendance",{p_event_keys:keys});keys.forEach(k=>attendCount[k]=0);rows.forEach(r=>attendCount[r.event_key]=+r.attendees);paintCounts();}catch(err){console.log("Attendance not available:",err.message);}
+}
+function countLabel(n){return n?`${n} attending`:"";}
+function paintCounts(){
+  document.querySelectorAll("[data-att]").forEach(el=>{const n=attendCount[el.dataset.att];el.textContent=n?`${n} attending`:"";});
+  const b=document.getElementById("attBtn");
+  if(b){const k=b.dataset.k;b.setAttribute("aria-pressed",iAttend(k));b.querySelector(".al").textContent=iAttend(k)?"Attending":"Click if attending";document.getElementById("attCount").textContent=countLabel(attendCount[k]||0);}
+}
+async function toggleAttend(k){
+  const b=document.getElementById("attBtn"); if(b)b.disabled=true;
+  try{const r=await sbRpc("toggle_call_attendance",{p_event_key:k,p_device_id:deviceId});
+    try{localStorage.setItem("att:"+k,r.attending?"1":"0");}catch(_){}
+    attendCount[k]=r.count; paintCounts();
+  }catch(err){alert("Could not save that right now. Please try again.");}
+  if(b)b.disabled=false;
+}
 let selIdx=-1;
 function showDetail(e){
   selIdx=callEvents.indexOf(e);
@@ -569,7 +624,12 @@ function showDetail(e){
   const d=new Date(e.start),en=new Date(e.end),el=document.getElementById("calDetail");
   const local=Intl.DateTimeFormat().resolvedOptions().timeZone;
   el.hidden=false;
-  el.innerHTML=`<button class="x" aria-label="Close">&times;</button>${e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}
+  el.innerHTML=`<button class="x" aria-label="Close">&times;</button>
+    ${(()=>{const nw=new Date(),st=new Date(e.start),en2=new Date(e.end);
+      if(en2<=nw)return "";
+      if(nw>=new Date(st-15*60000))return `<div class="att top"><a class="att-join" href="${e.join||JOIN_URL}" target="_blank" rel="noopener"><i class="dot"></i>Join call now</a></div>`;
+      return `<div class="att top"><button id="attBtn" class="att-btn t-${e.highlight||e.type}" data-k="${evKey(e)}" aria-pressed="${iAttend(evKey(e))}"><span class="ac">&#10003;</span><span class="al">${iAttend(evKey(e))?"Attending":"Click if attending"}</span></button><span class="att-n" id="attCount">${countLabel(attendCount[evKey(e)]||0)}</span></div>`;})()}
+    ${e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}
     <h4>${e.title}</h4>
     <div class="tz"><div><span>Your time</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}, ${tFmt(d)} to ${tFmt(en)}</div>
     <div><span>Jess's time (Brisbane)</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",timeZone:"Australia/Brisbane"})}, ${bneFmt(d)} to ${bneFmt(en)}</div></div>
@@ -578,6 +638,7 @@ function showDetail(e){
     <a href="${gcalLink(e)}" target="_blank" rel="noopener">Add to Google</a>
     <a href="${icsLink(e)}" download="wmhq-call.ics">Add to Apple / Outlook</a></div>`;
   el.querySelector(".x").onclick=()=>{el.hidden=true;selIdx=-1;document.querySelectorAll(".ev.sel").forEach(b=>b.classList.remove("sel"));};
+  const ab=document.getElementById("attBtn"); if(ab)ab.onclick=()=>toggleAttend(ab.dataset.k);
   el.scrollIntoView({behavior:"smooth",block:"center"});
 }
 function renderCal(){
@@ -605,7 +666,7 @@ function renderCal(){
     const isT=now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===dn;
     if(!de.length&&window.innerWidth<=700&&!isT){h+=`<div class="cal-day empty"></div>`;continue;}
     const label=window.innerWidth<=700?new Date(y,m,dn).toLocaleDateString("en-AU",{weekday:"short",day:"numeric"}):dn;
-    h+=`<div class="cal-day${isT?" today":""}"><span class="dn">${label}</span><div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small></button>`).join("")}</div></div>`;
+    h+=`<div class="cal-day${isT?" today":""}"><span class="dn">${label}</span><div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small><small class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?attendCount[evKey(e)]+" attending":""}</small></button>`).join("")}</div></div>`;
   }
   const monthHas=evs.some(e=>{const d=new Date(e.start);return d.getFullYear()===y&&d.getMonth()===m;});
   if(!monthHas)h+=`<div class="cal-empty">No scheduled calls yet. Check back soon.</div>`;
@@ -614,7 +675,7 @@ function renderCal(){
     h=me.length?me.map(e=>{const d=new Date(e.start);return `<button class="lrow${new Date(e.end)<now?" past":""}${callEvents.indexOf(e)===selIdx?" sel":""}" data-i="${callEvents.indexOf(e)}">
       <span class="ld"><b>${d.getDate()}</b>${d.toLocaleDateString("en-AU",{weekday:"short"})}</span>
       <span class="lbar ${e.type}${e.highlight?" "+e.highlight:""}"></span>
-      <span class="lt">${e.title}<small>${tFmt(d)} to ${tFmt(new Date(e.end))} your time</small></span>
+      <span class="lt">${e.title}<small>${tFmt(d)} to ${tFmt(new Date(e.end))} your time <span class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?" · "+attendCount[evKey(e)]+" attending":""}</span></small></span>
       ${e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}</button>`;}).join("")
       :`<div class="cal-empty">No scheduled calls yet. Check back soon.</div>`;
     document.getElementById("calGrid").classList.add("listv");
@@ -644,11 +705,13 @@ async function loadLiveCalls(){
         highlight:/bi-?annual/i.test(e.summary||"")?"workshop":undefined,
         join:e.hangoutLink||(e.conferenceData&&e.conferenceData.entryPoints&&(e.conferenceData.entryPoints.find(p=>p.entryPointType==="video")||{}).uri)||"" }));
     }));
-    callEvents=res.flat(); renderCal();
+    callEvents=res.flat(); renderCal(); loadAttendance();
   }catch(err){ console.log("Calendar sync not available yet, showing snapshot:",err.message); }
 }
 loadLiveCalls();
 renderCal();
+loadAttendance();
+setInterval(loadAttendance,60000);
 document.getElementById("footerYear").textContent=new Date().getFullYear();
 </script>
 </body>
