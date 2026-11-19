@@ -250,10 +250,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--bright-red);outline
 .ev.business{background:#CFE3D1}.ev.subconscious{background:#DCD3EC}.ev.combined{background:#F2C6D0}.ev.masterclass{background:#E3BACB}
 .cal-empty{grid-column:1/-1;text-align:center;padding:28px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fbf6f6}
 .ev.workshop{background:#FBE7A1}
-.ev.newyear{background:linear-gradient(135deg,#3a0a0e,#8D0004)!important;color:#F7DDB0!important;border:1px solid #E3B567;box-shadow:0 4px 12px rgba(141,0,4,.25);font-weight:700}
-.ev.newyear::before{content:"✦ ";color:#E3B567}
-.ev.newyear small,.ev.newyear span{color:#F2C6D0!important}
-.tag.newyear{background:#8D0004;color:#F7DDB0}
+.ev.newyear{background:linear-gradient(135deg,#F7DDB0,#F2C6D0)!important;border:1px solid #E3B567}
+.tag.newyear{background:linear-gradient(135deg,#F7DDB0,#F2C6D0);color:#660810}
 .lbar.newyear{background:#E3B567}
 .att-btn.t-newyear{--tick:#F7DDB0}
 .cal-tz{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#5a4a10;background:rgba(250,232,140,.45);border-radius:6px;padding:6px 12px;margin-bottom:12px}
@@ -515,6 +513,10 @@ h1 em{font-style:normal;color:#F2C6D0}
 .nytag{position:absolute;left:8px;bottom:6px;font-size:18px;line-height:1}
 .nyem{font-size:12px;line-height:1}
 @media(max-width:700px){.nytag,.xmastag{position:static;display:inline-flex;margin-top:6px}}
+.cal-day.val{position:relative;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 20s-6-3.7-7.7-7.4C4.1 9.9 5.8 7 8.6 7c1.8 0 2.9 1 4.4 2.5C14.5 8 15.6 7 17.4 7c2.8 0 4.5 2.9 3.3 5.6C19 16.3 13 20 13 20z' fill='%23F2C6D0' opacity='.7'/%3E%3C/svg%3E") 0 0/26px 26px,linear-gradient(160deg,#FFF5F8,#FBE4EA) !important;border:1px solid #F2C6D0}
+.valtag{position:absolute;left:8px;bottom:8px;display:flex;white-space:nowrap;align-items:center;gap:5px;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:11px;font-weight:600;color:#B0566C;background:rgba(255,255,255,.85);padding:2px 6px;border-radius:6px}
+.valtag svg{width:13px;height:13px;fill:#E89AAE;flex:none}
+@media(max-width:700px){.valtag{position:static;display:inline-flex;margin-top:6px}}
 </style>
 </head>
 <body>
@@ -699,10 +701,11 @@ function renderCal(){
     const isT=now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===dn;
     const xmas=m===11&&dn===25;
     const ny=m===0&&dn===1;
+    const val=m===1&&dn===14;
     const fest=!xmas&&!ny&&((m===11&&dn>=21)||(m===0&&dn<=4));
-    if(!de.length&&window.innerWidth<=700&&!isT&&!fest&&!xmas&&!ny){h+=`<div class="cal-day empty"></div>`;continue;}
+    if(!de.length&&window.innerWidth<=700&&!isT&&!fest&&!xmas&&!ny&&!val){h+=`<div class="cal-day empty"></div>`;continue;}
     const label=window.innerWidth<=700?new Date(y,m,dn).toLocaleDateString("en-AU",{weekday:"short",day:"numeric"}):dn;
-    h+=`<div class="cal-day${isT?" today":""}${fest?" fest":""}${xmas?" xmas":""}${ny?" ny":""}"><span class="dn">${label}</span>${ny?`<span class="nytag" aria-label="New Year">🥳</span>`:""}${xmas?`<span class="bow" aria-hidden="true"></span><span class="xmastag">Christmas Day</span>`:""}${fest?`<span class="festtag"><span class="festrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c2-7 6-12 12-13 2 0 3 2 2 4l-3 1 5 7z" fill="#C0272D"/><rect x="2" y="17" width="17" height="4" rx="2" fill="#fff" stroke="#e7c9cf"/><circle cx="19.5" cy="17.5" r="2.5" fill="#fff" stroke="#e7c9cf"/></svg>Festive Szn Break!</span><span class="festsub">${(m===11&&(dn===24||dn===25||dn===31))||m===0?"No calls / audit delays":"No calls, only audits"}</span></span>`:""}<div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small><small class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?attendCount[evKey(e)]+" attending":""}</small></button>`).join("")}</div></div>`;
+    h+=`<div class="cal-day${isT?" today":""}${fest?" fest":""}${xmas?" xmas":""}${ny?" ny":""}${val?" val":""}"><span class="dn">${label}</span>${val?`<span class="valtag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>Happy Valentine’s Day</span>`:""}${ny?`<span class="nytag" aria-label="New Year">🥳</span>`:""}${xmas?`<span class="bow" aria-hidden="true"></span><span class="xmastag">Christmas Day</span>`:""}${fest?`<span class="festtag"><span class="festrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c2-7 6-12 12-13 2 0 3 2 2 4l-3 1 5 7z" fill="#C0272D"/><rect x="2" y="17" width="17" height="4" rx="2" fill="#fff" stroke="#e7c9cf"/><circle cx="19.5" cy="17.5" r="2.5" fill="#fff" stroke="#e7c9cf"/></svg>Festive Szn Break!</span><span class="festsub">${(m===11&&(dn===24||dn===25||dn===31))||m===0?"No calls / audit delays":"No calls, only audits"}</span></span>`:""}<div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small><small class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?attendCount[evKey(e)]+" attending":""}</small></button>`).join("")}</div></div>`;
   }
   const monthHas=evs.some(e=>{const d=new Date(e.start);return d.getFullYear()===y&&d.getMonth()===m;});
   if(!monthHas)h+=`<div class="cal-empty">No scheduled calls yet. Check back soon.</div>`;
