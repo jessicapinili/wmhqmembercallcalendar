@@ -591,6 +591,9 @@ let callEvents = [
   { type:"business",     title:"WMHQ Business Call", start:"2026-11-26T06:30:00+10:00", end:"2026-11-26T07:30:00+10:00", join:"https://meet.google.com/reu-uqar-jqe" }
 ];
 const evColour={business:"#CFE3D1",subconscious:"#DCD3EC",combined:"#F2C6D0",masterclass:"#E3BACB"};
+const calRestore=(()=>{try{const nav=(performance.getEntriesByType("navigation")[0]||{}).type;const hid=+sessionStorage.getItem("wmhqCalHide")||0;return nav==="reload"||(Date.now()-hid<8000);}catch(_){return false;}})();
+window.addEventListener("pagehide",()=>{try{sessionStorage.setItem("wmhqCalHide",Date.now());}catch(_){}});
+if(!calRestore){try{sessionStorage.removeItem("wmhqCal");}catch(_){}}
 let calMonth=(()=>{try{const v=JSON.parse(sessionStorage.getItem("wmhqCal")||"null");if(v&&v.m){const [y,mo]=v.m.split("-").map(Number);return new Date(y,mo,1);}}catch(_){}const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);})();
 let calFilter=null, calView="grid";
 const tFmt=d=>d.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}).replace(" ","").toLowerCase();
