@@ -589,7 +589,7 @@ let callEvents = [
   { type:"business",     title:"WMHQ Business Mastermind Call", start:"2026-11-26T06:30:00+10:00", end:"2026-11-26T07:30:00+10:00", join:"https://meet.google.com/reu-uqar-jqe" }
 ];
 const evColour={business:"#CFE3D1",subconscious:"#DCD3EC",combined:"#F2C6D0",masterclass:"#E3BACB"};
-let calMonth=(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);})();
+let calMonth=(()=>{try{const v=JSON.parse(sessionStorage.getItem("wmhqCal")||"null");if(v&&v.m){const [y,mo]=v.m.split("-").map(Number);return new Date(y,mo,1);}}catch(_){}const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);})();
 let calFilter=null, calView="grid";
 const tFmt=d=>d.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}).replace(" ","").toLowerCase();
 const bneFmt=d=>d.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit",timeZone:"Australia/Brisbane"}).replace(" ","").toLowerCase();
@@ -674,6 +674,7 @@ function showDetail(e){
   el.scrollIntoView({behavior:"smooth",block:"center"});
 }
 function renderCal(){
+  try{sessionStorage.setItem("wmhqCal",JSON.stringify({m:calMonth.getFullYear()+"-"+calMonth.getMonth(),v:typeof calView!=="undefined"?calView:"grid"}));}catch(_){}
   const tzn=Intl.DateTimeFormat().resolvedOptions().timeZone||"";
   document.getElementById("calTz").innerHTML=`These calls show in your time zone${tzn?` <span>(${tzn.replace(/_/g," ")})</span>`:""}`;
   const y=calMonth.getFullYear(),m=calMonth.getMonth(),now=new Date();
@@ -743,6 +744,7 @@ async function loadLiveCalls(){
     callEvents=res.flat(); renderCal(); loadAttendance();
   }catch(err){ console.log("Calendar sync not available yet, showing snapshot:",err.message); }
 }
+try{const v=JSON.parse(sessionStorage.getItem("wmhqCal")||"null");if(v&&v.v==="list")document.getElementById("vList").click();}catch(_){}
 loadLiveCalls();
 renderCal();
 loadAttendance();
