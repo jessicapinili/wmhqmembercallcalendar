@@ -250,6 +250,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--bright-red);outline
 .ev.business{background:#CFE3D1}.ev.subconscious{background:#DCD3EC}.ev.combined{background:#F2C6D0}.ev.masterclass{background:#E3BACB}
 .cal-empty{grid-column:1/-1;text-align:center;padding:28px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fbf6f6}
 .ev.workshop{background:#FBE7A1}
+.ev.newyear{background:linear-gradient(135deg,#F7DDB0,#F2C6D0)!important;border:1px solid #E3B567}
+.tag.newyear{background:linear-gradient(135deg,#F7DDB0,#F2C6D0);color:#660810}
+.lbar.newyear{background:#E3B567}
+.att-btn.t-newyear{--tick:#F7DDB0}
 .cal-tz{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#5a4a10;background:rgba(250,232,140,.45);border-radius:6px;padding:6px 12px;margin-bottom:12px}
 .cal-tz span{color:#5a4a10;text-transform:none;letter-spacing:.04em}
 .cinfo{margin-top:14px;font-size:15px;line-height:1.6}
@@ -614,7 +618,8 @@ const workshopInfo = { p1: `<p>Twice a year, we close the 99+ tabs and take a pr
 <p>This is another working session. I’ll have a guide ready, so bring your laptop or a notepad and pen, plus your notes from Part 1. Especially the main bottleneck &amp; gaps you identified.</p>
 <p><b>Be there LIVE if you can. You will get more out of it.</b> Bring the decisions you’re stuck on. You’ll be able to ask questions, get feedback and check whether your plan makes sense before filling your calendar with it.</p>
 <p>A replay will be available.</p>` };
-const infoFor=e=>e.highlight==="workshop"?(/(session\s*0?2|part\s*2|decide)/i.test(e.title)?workshopInfo.p2:workshopInfo.p1):callInfo[e.type];
+const newYearInfo=`<p><strong>Happy New Year, WMHQ loves! 🥳</strong></p><p>We’re kicking things off with a 90-minute catch-up call to get your head and business ready for Q1.</p><p><strong>Bring:</strong></p><ul><li>Anything that came up while finishing your Biannual Workshop.</li><li>Your plans, questions and decisions you want my eyes on.</li><li>Anything you’ve already started overthinking. January works fast lol.</li></ul><p>You don’t need everything figured out before you come. That’s what the call is for. Let’s get clear on where you’re taking 2027 and what needs your attention first.</p>`;
+const infoFor=e=>e.highlight==="newyear"?newYearInfo:e.highlight==="workshop"?(/(session\s*0?2|part\s*2|decide)/i.test(e.title)?workshopInfo.p2:workshopInfo.p1):callInfo[e.type];
 
 /* ===== ATTENDANCE (Supabase: WMHQ App) ===== */
 const SB_URL="https://gglpsokiodelfrfnpxua.supabase.co", SB_KEY="sb_publishable_4kwUVummpI_EuwBQxMS5jw_EAl7fRJK";
@@ -654,7 +659,7 @@ function showDetail(e){
       if(en2<=nw)return "";
       if(nw>=new Date(st-15*60000))return `<div class="att top"><a class="att-join" href="${e.join||JOIN_URL}" target="_blank" rel="noopener"><i class="dot"></i>Join call now</a></div>`;
       return `<div class="att top"><button id="attBtn" class="att-btn t-${e.highlight||e.type}" data-k="${evKey(e)}" aria-pressed="${iAttend(evKey(e))}"><span class="ac">&#10003;</span><span class="al">${iAttend(evKey(e))?"Attending":"Click if attending"}</span></button><span class="att-n" id="attCount">${countLabel(attendCount[evKey(e)]||0)}</span></div>`;})()}
-    ${e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}
+    ${e.highlight==="newyear"?`<span class="tag newyear">New Year Call 🥳</span>`:e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}
     <h4>${e.title}</h4>
     <div class="tz"><div><span>Your time</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}, ${tFmt(d)} to ${tFmt(en)}</div>
     <div><span>Jess's time (Brisbane)</span>${d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",timeZone:"Australia/Brisbane"})}, ${bneFmt(d)} to ${bneFmt(en)}</div></div>
@@ -704,7 +709,7 @@ function renderCal(){
       <span class="ld"><b>${d.getDate()}</b>${d.toLocaleDateString("en-AU",{weekday:"short"})}</span>
       <span class="lbar ${e.type}${e.highlight?" "+e.highlight:""}"></span>
       <span class="lt">${e.title}<small>${tFmt(d)} to ${tFmt(new Date(e.end))} your time <span class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?" · "+attendCount[evKey(e)]+" attending":""}</span></small></span>
-      ${e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}</button>`;}).join("")
+      ${e.highlight==="newyear"?`<span class="tag newyear">New Year Call 🥳</span>`:e.highlight==="workshop"?`<span class="tag workshop">Bi-Annual Workshop</span>`:`<span class="tag ${e.type}">${covers[e.type].name}</span>`}</button>`;}).join("")
       :`<div class="cal-empty">No scheduled calls yet. Check back soon.</div>`;
     document.getElementById("calGrid").classList.add("listv");
   } else document.getElementById("calGrid").classList.remove("listv");
@@ -729,8 +734,8 @@ async function loadLiveCalls(){
       const r=await fetch(u); if(!r.ok) throw new Error(type+" "+r.status);
       const j=await r.json();
       return (j.items||[]).filter(e=>e.status!=="cancelled"&&e.start&&e.start.dateTime).map(e=>({
-        type, title:"WMHQ "+(clean(e.summary)||covers[type].name), start:e.start.dateTime, end:e.end.dateTime,
-        highlight:/bi-?annual/i.test(e.summary||"")?"workshop":undefined,
+        type, title:(type==="masterclass"&&new Date(e.start.dateTime).toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"})==="2027-01-06")?"WMHQ New Year Welcome Back Call!":"WMHQ "+(clean(e.summary)||covers[type].name), start:e.start.dateTime, end:e.end.dateTime,
+        highlight:/bi-?annual/i.test(e.summary||"")?"workshop":(type==="masterclass"&&new Date(e.start.dateTime).toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"})==="2027-01-06"?"newyear":undefined),
         join:e.hangoutLink||(e.conferenceData&&e.conferenceData.entryPoints&&(e.conferenceData.entryPoints.find(p=>p.entryPointType==="video")||{}).uri)||"" }));
     }));
     callEvents=res.flat(); renderCal(); loadAttendance();
