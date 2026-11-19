@@ -484,6 +484,31 @@ h1 em{font-style:normal;color:#F2C6D0}
 .att.top .att-btn[aria-pressed="true"] .ac{border-color:#FBE7A1}
 .att-btn.t-business{--tick:#CFE3D1}.att-btn.t-subconscious{--tick:#DCD3EC}.att-btn.t-combined{--tick:#F2C6D0}.att-btn.t-masterclass{--tick:#E3BACB}.att-btn.t-workshop{--tick:#FBE7A1}
 .att.top .att-btn[aria-pressed="true"] .ac{background:var(--tick,#FBE7A1);border-color:var(--tick,#FBE7A1)}
+.cal-day.fest{position:relative;background:linear-gradient(160deg,#fff 55%,#fdf0f2)}
+.festtag{position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:10.5px;font-weight:600;line-height:1.2;color:#8D0004;opacity:.85}
+.festrow{display:flex;align-items:center;gap:5px}
+.festsub{font-weight:500;color:#6b4a4a;font-size:10px;padding-left:21px}
+.festtag svg{width:16px;height:16px;flex:none}
+@media(max-width:700px){.festtag{position:static;margin-top:6px}}
+.cal-day.xmas{position:relative;overflow:hidden;background:
+ linear-gradient(90deg,transparent calc(50% - 6px),#F2C6D0 calc(50% - 6px),#F2C6D0 calc(50% + 6px),transparent calc(50% + 6px)),
+ linear-gradient(0deg,transparent calc(50% - 6px),#F2C6D0 calc(50% - 6px),#F2C6D0 calc(50% + 6px),transparent calc(50% + 6px)),
+ repeating-linear-gradient(0deg,rgba(255,255,255,.13) 0 3px,transparent 3px 14px,rgba(0,0,0,.18) 14px 20px,transparent 20px 28px),
+ repeating-linear-gradient(90deg,rgba(255,255,255,.13) 0 3px,transparent 3px 14px,rgba(0,0,0,.18) 14px 20px,transparent 20px 28px),
+ #8D0004 !important;border-color:#660810}
+.cal-day.xmas .dn{position:relative;z-index:2;display:inline-block;width:auto !important;align-self:flex-start;background:#fff;border-radius:6px;padding:1px 6px;color:#660810}
+.cal-day.xmas .bow{position:absolute;left:50%;top:50%;width:40px;height:20px;transform:translate(-50%,-50%);z-index:1}
+.cal-day.xmas .bow::before,.cal-day.xmas .bow::after{content:"";position:absolute;top:0;width:20px;height:20px;border:5px solid #F2C6D0;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;box-sizing:border-box}
+.cal-day.xmas .bow::before{left:-3px;transform:rotate(-20deg)}.cal-day.xmas .bow::after{right:-3px;transform:rotate(20deg)}
+.xmastag{position:absolute;left:8px;bottom:8px;z-index:2;background:#fff;color:#8D0004;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:100px}
+.cal-day.ny{position:relative;background:
+ radial-gradient(circle,#C9952A 0 2px,transparent 3px) 8px 10px/34px 30px,
+ radial-gradient(circle,#E89AAE 0 2px,transparent 3px) 22px 24px/40px 36px,
+ radial-gradient(circle,#8D0004 0 1.5px,transparent 2.5px) 30px 6px/46px 42px,
+ linear-gradient(160deg,#FFF8E6,#FBE4EA) !important;border:1px solid #EBC98A}
+.nytag{position:absolute;left:8px;bottom:8px;display:flex;white-space:nowrap;align-items:center;gap:6px;background:#fff;border:1px solid #EBC98A;color:#8D0004;font-size:10px;font-weight:700;padding:3px 8px 3px 5px;gap:4px;border-radius:100px;box-shadow:0 4px 10px rgba(201,149,42,.18)}
+.nyem{font-size:12px;line-height:1}
+@media(max-width:700px){.nytag,.xmastag{position:static;display:inline-flex;margin-top:6px}}
 </style>
 </head>
 <body>
@@ -664,9 +689,12 @@ function renderCal(){
     const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(dn).padStart(2,"0")}`;
     const de=evs.filter(e=>(d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`)(new Date(e.start))===ds);
     const isT=now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===dn;
-    if(!de.length&&window.innerWidth<=700&&!isT){h+=`<div class="cal-day empty"></div>`;continue;}
+    const xmas=m===11&&dn===25;
+    const ny=m===0&&dn===1;
+    const fest=!xmas&&!ny&&((m===11&&dn>=21)||(m===0&&dn<=4));
+    if(!de.length&&window.innerWidth<=700&&!isT&&!fest&&!xmas&&!ny){h+=`<div class="cal-day empty"></div>`;continue;}
     const label=window.innerWidth<=700?new Date(y,m,dn).toLocaleDateString("en-AU",{weekday:"short",day:"numeric"}):dn;
-    h+=`<div class="cal-day${isT?" today":""}"><span class="dn">${label}</span><div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small><small class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?attendCount[evKey(e)]+" attending":""}</small></button>`).join("")}</div></div>`;
+    h+=`<div class="cal-day${isT?" today":""}${fest?" fest":""}${xmas?" xmas":""}${ny?" ny":""}"><span class="dn">${label}</span>${ny?`<span class="nytag"><span class="nyem">🥳</span>Happy New Year!</span>`:""}${xmas?`<span class="bow" aria-hidden="true"></span><span class="xmastag">Christmas Day</span>`:""}${fest?`<span class="festtag"><span class="festrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c2-7 6-12 12-13 2 0 3 2 2 4l-3 1 5 7z" fill="#C0272D"/><rect x="2" y="17" width="17" height="4" rx="2" fill="#fff" stroke="#e7c9cf"/><circle cx="19.5" cy="17.5" r="2.5" fill="#fff" stroke="#e7c9cf"/></svg>Festive Szn Break!</span><span class="festsub">${(m===11&&(dn===24||dn===25||dn===31))||m===0?"No calls / audit delays":"No calls, only audits"}</span></span>`:""}<div class="evs">${de.map(e=>`<button class="ev ${e.type}${e.highlight?" "+e.highlight:""}${callEvents.indexOf(e)===selIdx?" sel":""}${new Date(e.end)<now?" past":""}" data-i="${callEvents.indexOf(e)}">${e.title}<small>${tFmt(new Date(e.start))}</small><small class="attc" data-att="${evKey(e)}">${attendCount[evKey(e)]?attendCount[evKey(e)]+" attending":""}</small></button>`).join("")}</div></div>`;
   }
   const monthHas=evs.some(e=>{const d=new Date(e.start);return d.getFullYear()===y&&d.getMonth()===m;});
   if(!monthHas)h+=`<div class="cal-empty">No scheduled calls yet. Check back soon.</div>`;
